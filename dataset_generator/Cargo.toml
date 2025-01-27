@@ -1,0 +1,16 @@
+[package]
+name = "dataset_generator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+#compress-tools = { version = "0.15.1", features = ["tokio_support"] }
+compress-tools = "0.15"
+#env_logger = "0.11.6"
+#futures = "0.3.31"
+#reqwest = { version = "0.12.12", features = ["stream"] }
+slp_parser = { git = "https://github.com/AlexanderHarrison/slp_parser.git" }
+slpz = "1"
+#stream-download = "0.14.0"
+#tokio = { version = "1.42.0", features = ["rt-multi-thread"] }
+#tokio-util = { version = "0.7.13", features = ["io", "io-util"] }

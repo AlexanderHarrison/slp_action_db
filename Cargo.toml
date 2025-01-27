@@ -1,0 +1,8 @@
+[package]
+name = "slp_action_db"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+slp_parser = { git = "https://github.com/AlexanderHarrison/slp_parser.git" }
+slpz = "1.2"
