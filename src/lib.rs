@@ -82,7 +82,7 @@ pub fn read_row(file: &[u8], header: &Header) -> Result<Row, DBError> {
         opponent_initiation: Situation {
             start_state: slp_parser::BroadState::from_u16(header.opponent_character, read_u16(&file[0..])?)
                 .ok_or(invalid_db!())?,
-            action_taken: slp_parser::HighLevelAction::from_u16(header.opponent_character, read_u16(&file[2..])?)
+            action_taken: slp_parser::HighLevelAction::from_u16(header.opponent_character, dbg!(read_u16(&file[2..])?))
                 .ok_or(invalid_db!())?,
             pos_x: read_f32(&file[4..])?,
             pos_y: read_f32(&file[8..])?,
