@@ -179,12 +179,12 @@ pub fn search(rows: &[Row], queries: &[SearchQuery]) -> Vec<Vec<Row>> {
 
 fn read_u32(file: &[u8]) -> Result<u32, DBError> {
     if file.len() < 4 { return Err(invalid_db!()); }
-    Ok(u32::from_be_bytes(file[..4].try_into().unwrap()))
+    Ok(u32::from_le_bytes(file[..4].try_into().unwrap()))
 }
 
 fn read_u16(file: &[u8]) -> Result<u16, DBError> {
     if file.len() < 2 { return Err(invalid_db!()); }
-    Ok(u16::from_be_bytes(file[..2].try_into().unwrap()))
+    Ok(u16::from_le_bytes(file[..2].try_into().unwrap()))
 }
 
 fn read_u8(file: &[u8]) -> Result<u8, DBError> {
@@ -194,5 +194,5 @@ fn read_u8(file: &[u8]) -> Result<u8, DBError> {
 
 fn read_f32(file: &[u8]) -> Result<f32, DBError> {
     if file.len() < 4 { return Err(invalid_db!()); }
-    Ok(f32::from_be_bytes(file[..4].try_into().unwrap()))
+    Ok(f32::from_le_bytes(file[..4].try_into().unwrap()))
 }
