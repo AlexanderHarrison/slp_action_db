@@ -36,7 +36,7 @@ impl Header {
 
 #[derive(Debug, Clone)]
 pub enum DBError {
-    InvalidFile,
+    InvalidFile(&'static str),
     VersionTooNew,
 }
 
@@ -61,35 +61,37 @@ pub fn write_row(buf: &mut Vec<u8>, row: &Row) {
     buf.extend_from_slice(&row.score.to_le_bytes());
 }
 
+macro_rules! invalid_db { () => { DBError::InvalidFile(concat!(file!(), ":", line!())) } }
+
 pub fn read_header(file: &[u8]) -> Result<Header, DBError> {
-    if file.len() < Header::WRITTEN_SIZE { return Err(DBError::InvalidFile); }
+    if file.len() < Header::WRITTEN_SIZE { return Err(invalid_db!()); }
 
     Ok(Header {
         version: read_u32(&file[0..])?,
         player_character: slp_parser::Character::from_u8_internal(read_u8(&file[2..])?)
-            .ok_or(DBError::InvalidFile)?,
+            .ok_or(invalid_db!())?,
         opponent_character: slp_parser::Character::from_u8_internal(read_u8(&file[3..])?)
-            .ok_or(DBError::InvalidFile)?,
+            .ok_or(invalid_db!())?,
     })
 }
 
 pub fn read_row(file: &[u8], header: &Header) -> Result<Row, DBError> {
-    if file.len() < Row::WRITTEN_SIZE { return Err(DBError::InvalidFile); }
+    if file.len() < Row::WRITTEN_SIZE { return Err(invalid_db!()); }
 
     Ok(Row {
         opponent_initiation: Situation {
             start_state: slp_parser::BroadState::from_u16(header.opponent_character, read_u16(&file[0..])?)
-                .ok_or(DBError::InvalidFile)?,
+                .ok_or(invalid_db!())?,
             action_taken: slp_parser::HighLevelAction::from_u16(header.opponent_character, read_u16(&file[2..])?)
-                .ok_or(DBError::InvalidFile)?,
+                .ok_or(invalid_db!())?,
             pos_x: read_f32(&file[4..])?,
             pos_y: read_f32(&file[8..])?,
         },
         player_response: Situation {
             start_state: slp_parser::BroadState::from_u16(header.player_character, read_u16(&file[12..])?)
-                .ok_or(DBError::InvalidFile)?,
+                .ok_or(invalid_db!())?,
             action_taken: slp_parser::HighLevelAction::from_u16(header.player_character, read_u16(&file[14..])?)
-                .ok_or(DBError::InvalidFile)?,
+                .ok_or(invalid_db!())?,
             pos_x: read_f32(&file[16..])?,
             pos_y: read_f32(&file[20..])?,
         },
@@ -176,21 +178,21 @@ pub fn search(rows: &[Row], queries: &[SearchQuery]) -> Vec<Vec<Row>> {
 }
 
 fn read_u32(file: &[u8]) -> Result<u32, DBError> {
-    if file.len() < 4 { return Err(DBError::InvalidFile); }
+    if file.len() < 4 { return Err(invalid_db!()); }
     Ok(u32::from_be_bytes(file[..4].try_into().unwrap()))
 }
 
 fn read_u16(file: &[u8]) -> Result<u16, DBError> {
-    if file.len() < 2 { return Err(DBError::InvalidFile); }
+    if file.len() < 2 { return Err(invalid_db!()); }
     Ok(u16::from_be_bytes(file[..2].try_into().unwrap()))
 }
 
 fn read_u8(file: &[u8]) -> Result<u8, DBError> {
-    if file.is_empty() { return Err(DBError::InvalidFile); }
+    if file.is_empty() { return Err(invalid_db!()); }
     Ok(file[0])
 }
 
 fn read_f32(file: &[u8]) -> Result<f32, DBError> {
-    if file.len() < 4 { return Err(DBError::InvalidFile); }
+    if file.len() < 4 { return Err(invalid_db!()); }
     Ok(f32::from_be_bytes(file[..4].try_into().unwrap()))
 }
