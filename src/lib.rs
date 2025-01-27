@@ -68,9 +68,9 @@ pub fn read_header(file: &[u8]) -> Result<Header, DBError> {
 
     Ok(Header {
         version: read_u32(&file[0..])?,
-        player_character: slp_parser::Character::from_u8_internal(read_u8(&file[2..])?)
+        player_character: slp_parser::Character::from_u8_internal(read_u8(&file[4..])?)
             .ok_or(invalid_db!())?,
-        opponent_character: slp_parser::Character::from_u8_internal(read_u8(&file[3..])?)
+        opponent_character: slp_parser::Character::from_u8_internal(read_u8(&file[5..])?)
             .ok_or(invalid_db!())?,
     })
 }
