@@ -8,13 +8,6 @@ pub struct Situation {
     pub pos_y: f32,
 }
 
-#[derive(Debug, Clone)]
-pub fn SearchSituation {
-    pub start_state: slp_parser::BroadState,
-    pub pos_x: f32,
-    pub pos_y: f32,
-}
-
 impl Situation {
     pub const WRITTEN_SIZE: usize = 12;
 }
@@ -120,9 +113,41 @@ pub fn read_file(file: &[u8]) -> Result<(Header, Vec<Row>), DBError> {
     Ok((header, rows))
 }
 
+#[derive(Debug, Clone)]
+pub struct SearchSituation {
+    pub start_state: slp_parser::BroadState,
+    pub pos_x: f32,
+    pub pos_y: f32,
+}
+
+#[derive(Debug, Clone)]
 pub struct SearchQuery {
     pub player_response: SearchSituation,
     pub opponent_initiation: SearchSituation,
+}
+
+impl SearchQuery {
+    pub fn from_interaction_and_frames(
+        interaction: &slp_parser::Interaction,
+        player_frames: &[slp_parser::Frame],
+        opponent_frames: &[slp_parser::Frame],
+    ) -> SearchQuery {
+        let pl_frame = &player_frames[interaction.player_response.frame_start];
+        let op_frame = &opponent_frames[interaction.opponent_initiation.frame_start];
+
+        SearchQuery {
+            player_response: SearchSituation {
+                start_state: interaction.player_response.start_state,
+                pos_x: pl_frame.position.x,
+                pos_y: pl_frame.position.y,
+            },
+            opponent_initiation: SearchSituation {
+                start_state: interaction.opponent_initiation.start_state,
+                pos_x: op_frame.position.x,
+                pos_y: op_frame.position.y,
+            },
+        }
+    }
 }
 
 pub fn search(rows: &[Row], queries: &[SearchQuery]) -> Vec<Vec<Row>> {
@@ -132,9 +157,9 @@ pub fn search(rows: &[Row], queries: &[SearchQuery]) -> Vec<Vec<Row>> {
     let mut results = vec![Vec::new(); queries.len()];
 
     for row in rows {
-        for (query, query_i) in queries.iter().enumerate() {
+        for (query_i, query) in queries.iter().enumerate() {
             if query.player_response.start_state != row.player_response.start_state { continue; }
-            if query.opponent_response.start_state != row.opponent_initiation.start_state { continue; }
+            if query.opponent_initiation.start_state != row.opponent_initiation.start_state { continue; }
 
             let pl_x_dist = query.player_response.pos_x - row.player_response.pos_x;
             let pl_y_dist = query.player_response.pos_y - row.player_response.pos_y;
@@ -146,6 +171,8 @@ pub fn search(rows: &[Row], queries: &[SearchQuery]) -> Vec<Vec<Row>> {
             results[query_i].push(row.clone());
         }
     }
+
+    results
 }
 
 fn read_u32(file: &[u8]) -> Result<u32, DBError> {
